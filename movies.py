@@ -1,7 +1,7 @@
 import random
 import re
 
-import movie_storage
+import movie_storage_sql as storage
 from utils import err_msg, user_prompt, display_menu
 from datetime import datetime
 
@@ -21,7 +21,7 @@ def prompt_user_to_choice():
 
 # print total of movies in database , list all movies along with their rating
 def list_movies_and_display_total():
-    movies = movie_storage.list_movies()
+    movies = storage.list_movies()
     total_movies = len(movies)
     print(f"{total_movies} movies in total")
     for movie, info in movies.items():
@@ -59,12 +59,12 @@ def validate_name(name):
 
 
 def add_movie():
-    movies = movie_storage.list_movies()
+    movies = storage.list_movies()
     current_year = datetime.now().year
     movie_name = get_valid_input('Enter new movie name:',validate_name,'Please enter a valid, non-empty movie name that is not already in the list')
     movie_year = get_valid_input('Enter a new movie year:',lambda year :int(year) if year.isdigit() and 1888 <= int(year) <= current_year else None,f"Year must be a number between 1888 and {current_year}.")
     movie_rating = get_valid_input('Enter a new movie rating:', validate_rating,"Rating must be a number between 1 and 10." )
-    if movie_storage.add_movie(movie_name,movie_rating,movie_year):
+    if storage.add_movie(movie_name,movie_rating,movie_year):
         print('Movie added successfully!')
     else:
         err_msg('Movie already exist!')
@@ -74,7 +74,7 @@ def add_movie():
 def delete_movie():
     movie_name = get_valid_input('please enter the name of the movie you want to delete:', validate_name,
                                  'Please enter a valid, non-empty movie name')
-    if movie_storage.delete_movie(movie_name):
+    if storage.delete_movie(movie_name):
         print(f"Movie {movie_name} successfully deleted")
     else:
         err_msg("Movie doesn't exist!")
@@ -88,7 +88,7 @@ def update_movie():
                                  'Please enter a valid, non-empty movie name')
     #movie_name = user_prompt("please enter the name of the movie you want to update:")
     movie_rating = get_valid_input('Enter a new movie rating:',validate_rating,"Rating must be a number between 1 and 10.")
-    if movie_storage.update_movie(movie_name,movie_rating):
+    if storage.update_movie(movie_name,movie_rating):
         print('Movie updated successfully!')
     else:
         err_msg("Movie doesn't exist!")
@@ -131,7 +131,7 @@ def print_worst_rating_movies(movies):
 
 # print statistics about the movies in database
 def print_stats():
-    movies = movie_storage.list_movies()
+    movies = storage.list_movies()
     # average ratings
     ratings = [details['rating'] for details in movies.values() ]
     total_rating = sum(ratings)
@@ -146,7 +146,7 @@ def print_stats():
 
 
 def print_random_movie():
-    movies = movie_storage.get_movies()
+    movies = storage.list_movies()
     #functions like random.choice() need an indexable sequence (like a list or tuple),dict_keys is not indexable.
     random_movie_name = random.choice(list(movies.keys()))
     print(f"Your movie for tonight {random_movie_name} , it'S rated {movies[random_movie_name]['rating']}")
@@ -170,7 +170,7 @@ def min_distance(word1, word2):
 
 
 def search_movie():
-    movies = movie_storage.list_movies()
+    movies = storage.list_movies()
     user_search_query = user_prompt('Enter part of movie name: ')
 
     results = [(movie , details['rating']) for movie , details in movies.items() if user_search_query.lower() in movie.lower()]
@@ -194,7 +194,7 @@ def search_movie():
 
 
 def print_sorted_movies_by_ratings():
-    movies = movie_storage.list_movies()
+    movies = storage.list_movies()
     sorted_by_ratings = sorted(movies.items(), key=lambda item: item[1]['rating'], reverse=True)
     for movie, details in sorted_by_ratings:
         print(f"{movie}, {details['rating']}")
