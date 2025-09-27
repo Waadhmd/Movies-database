@@ -14,6 +14,7 @@ def print_line(spaces=1):
 
 
 def prompt_user_to_choice():
+    """Prompt the user to select a menu option and return it as an integer."""
     choice = int(user_prompt("Enter choice (0-8):"))
     print_line()
     return choice
@@ -21,6 +22,7 @@ def prompt_user_to_choice():
 
 # print total of movies in database , list all movies along with their rating
 def list_movies_and_display_total():
+    """List all movies with their year and rating, and print the total number of movies."""
     movies = storage.list_movies()
     total_movies = len(movies)
     print(f"{total_movies} movies in total")
@@ -29,6 +31,7 @@ def list_movies_and_display_total():
     print_line()
 
 def get_valid_input(prompt,validator,error_msg):
+    """ Repeatedly prompt the user until a valid input is provided."""
     while True:
         user_input = user_prompt(prompt)
         try:
@@ -42,6 +45,7 @@ def get_valid_input(prompt,validator,error_msg):
             print(error_msg)
 
 def validate_rating(rating):
+    """Validate that a rating is a number between 1 and 10"""
     if rating.replace('.','',1).isdigit():
         r = float(rating)
         if  1<= r <= 10:
@@ -50,6 +54,7 @@ def validate_rating(rating):
 
 
 def validate_name(name):
+    """Validate that the movie name is non-empty and contains allowed characters."""
     if not name.strip():
         return None
     title = name.strip().title()
@@ -59,6 +64,7 @@ def validate_name(name):
 
 
 def add_movie():
+    """Prompt the user to add a new movie and store it."""
     movies = storage.list_movies()
     current_year = datetime.now().year
     movie_name = get_valid_input('Enter new movie name:',validate_name,'Please enter a valid, non-empty movie name that is not already in the list')
@@ -72,6 +78,7 @@ def add_movie():
 
 
 def delete_movie():
+    """Prompt the user to delete a movie by name."""
     movie_name = get_valid_input('please enter the name of the movie you want to delete:', validate_name,
                                  'Please enter a valid, non-empty movie name')
     if storage.delete_movie(movie_name):
@@ -84,6 +91,7 @@ def delete_movie():
 
 # update a movie
 def update_movie():
+    """Prompt the user to update the rating of a movie."""
     movie_name = get_valid_input('please enter the name of the movie you want to update:', validate_name,
                                  'Please enter a valid, non-empty movie name')
     #movie_name = user_prompt("please enter the name of the movie you want to update:")
@@ -96,6 +104,7 @@ def update_movie():
 
 
 def get_median(ratings):
+    """Return the median value from a list of ratings."""
     sorted_ratings = sorted(ratings)
     count_of_ratings = len(sorted_ratings)
     if count_of_ratings == 0:
@@ -108,6 +117,7 @@ def get_median(ratings):
 
 
 def print_top_movies(movies):
+    """Print the movie(s) with the highest rating."""
     ratings = [details['rating'] for details in movies.values()]
     max_rating = max(ratings)
     top_movies = [name for name, details in movies.items() if details['rating'] == max_rating]
@@ -119,6 +129,7 @@ def print_top_movies(movies):
 
 
 def print_worst_rating_movies(movies):
+    """Print the movie(s) with the lowest rating."""
     ratings = [details['rating'] for details in movies.values()]
     min_rating = min(ratings)
     worst_movies = [name for name, details in movies.items() if details['rating'] == min_rating]
@@ -131,6 +142,7 @@ def print_worst_rating_movies(movies):
 
 # print statistics about the movies in database
 def print_stats():
+    """Print statistics about the movies: average, median, best and worst."""
     movies = storage.list_movies()
     # average ratings
     ratings = [details['rating'] for details in movies.values() ]
@@ -146,6 +158,7 @@ def print_stats():
 
 
 def print_random_movie():
+    """Print a randomly selected movie from the database."""
     movies = storage.list_movies()
     #functions like random.choice() need an indexable sequence (like a list or tuple),dict_keys is not indexable.
     random_movie_name = random.choice(list(movies.keys()))
@@ -154,6 +167,7 @@ def print_random_movie():
 
 
 def min_distance(word1, word2):
+    """Compute the Levenshtein distance between two strings."""
     m, n = len(word1), len(word2)
     dp = [[0] * (n + 1) for _ in range(m + 1)]
     for i in range(m + 1):
@@ -170,6 +184,7 @@ def min_distance(word1, word2):
 
 
 def search_movie():
+    """Search for a movie by partial name; suggest close matches if none found."""
     movies = storage.list_movies()
     user_search_query = user_prompt('Enter part of movie name: ')
 
@@ -194,6 +209,7 @@ def search_movie():
 
 
 def print_sorted_movies_by_ratings():
+    """Print all movies sorted by rating in descending order."""
     movies = storage.list_movies()
     sorted_by_ratings = sorted(movies.items(), key=lambda item: item[1]['rating'], reverse=True)
     for movie, details in sorted_by_ratings:
@@ -202,6 +218,7 @@ def print_sorted_movies_by_ratings():
 
 
 def main():
+    """Run the interactive movie database menu."""
     menu = ["Exit", "List movies", "Add movie", "Delete movie", "Update movie", "Stats", "Random movie", "Search movie",
             "Movies sorted by rating"]
     menu_commands = {
