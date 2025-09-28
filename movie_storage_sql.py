@@ -16,7 +16,8 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT UNIQUE NOT NULL,
                 year INTEGER NOT NULL,
-                rating REAL NOT NULL
+                rating REAL NOT NULL,
+                poster TEXT NOT NULL
             )
         """))
         connection.commit()
@@ -24,19 +25,34 @@ def init_db():
 
 def list_movies():
     """Retrieve all movies from the database."""
-    with engine.connect() as connection:
-        result = connection.execute(text("SELECT title, year, rating FROM movies"))
-        movies = result.fetchall()
+    try:
+        with engine.connect() as connection:
+            result = connection.execute(text("SELECT title, year, rating, poster FROM movies"))
+            movies = result.fetchall()
+            if not movies:
+                print('No movies found in database')
+                return {}
+        return {
+            row.title: {
+                "year": row.year,
+                "rating": row.rating,
+                "poster": row.poster,
+            }
+            for row in movies
 
-    return {row[0]: {"year": row[1], "rating": row[2]} for row in movies}
+        }
+    except SQLAlchemyError as e:
+        print(f"Database error {e}")
+        return {}
 
 
-def add_movie(title:str, year:int, rating:float):
+
+def add_movie(title:str, year:int, rating:float,poster:str):
     """Add a new movie to the database."""
     with engine.connect() as connection:
         try:
-            connection.execute(text("INSERT INTO movies (title, year, rating) VALUES (:title, :year, :rating)"),
-                                   {"title": title, "year": year, "rating": rating})
+            connection.execute(text("INSERT INTO movies (title, year, rating, poster) VALUES (:title, :year, :rating,:poster)"),
+                                   {"title": title, "year": year, "rating": rating,"poster":poster})
             connection.commit()
             print(f"Movie '{title}' added successfully.")
             return True
@@ -58,14 +74,14 @@ def delete_movie(title:str):
             if result.rowcount == 0:
                 print(f"Movie '{title}' not found.")
                 return False
-            print(f"Movie '{title} deleted successfully. ")
+            print(f"Movie '{title}' deleted successfully. ")
             return True
         except SQLAlchemyError as e:
             print(f"Error deleting movie: {e}")
             return False
 
 
-def update_movie(title, rating):
+def update_movie(title:str, rating:float):
     """Update a movie's rating in the database."""
     try:
         with engine.connect() as connection:

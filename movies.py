@@ -4,9 +4,7 @@ import re
 import movie_storage_sql as storage
 from utils import err_msg, user_prompt, display_menu
 from datetime import datetime
-
-
-
+from omdb_api import fetch_movie
 def print_line(spaces=1):
     # Print blank lines for readability.
     for _ in range(spaces):
@@ -65,12 +63,17 @@ def validate_name(name):
 
 def add_movie():
     """Prompt the user to add a new movie and store it."""
-    movies = storage.list_movies()
-    current_year = datetime.now().year
     movie_name = get_valid_input('Enter new movie name:',validate_name,'Please enter a valid, non-empty movie name that is not already in the list')
-    movie_year = get_valid_input('Enter a new movie year:',lambda year :int(year) if year.isdigit() and 1888 <= int(year) <= current_year else None,f"Year must be a number between 1888 and {current_year}.")
-    movie_rating = get_valid_input('Enter a new movie rating:', validate_rating,"Rating must be a number between 1 and 10." )
-    if storage.add_movie(movie_name,movie_rating,movie_year):
+    movie = fetch_movie(movie_name)
+    if movie is None:
+        print(f"Movie {movie_name} not found or API not available.")
+        return
+    title = movie['title']
+    rating = movie['rating']
+    year = movie.get['year']
+    poster = movie.get['poster']
+    # save to database
+    if storage.add_movie(title, year, rating, poster):
         print('Movie added successfully!')
     else:
         err_msg('Movie already exist!')
