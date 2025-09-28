@@ -1,3 +1,4 @@
+import json
 import random
 import re
 
@@ -5,6 +6,8 @@ import movie_storage_sql as storage
 from utils import err_msg, user_prompt, display_menu
 from datetime import datetime
 from omdb_api import fetch_movie
+from generate_website import generate_website
+
 def print_line(spaces=1):
     # Print blank lines for readability.
     for _ in range(spaces):
@@ -70,8 +73,8 @@ def add_movie():
         return
     title = movie['title']
     rating = movie['rating']
-    year = movie.get['year']
-    poster = movie.get['poster']
+    year = movie['year']
+    poster = movie['poster']
     # save to database
     if storage.add_movie(title, year, rating, poster):
         print('Movie added successfully!')
@@ -220,10 +223,11 @@ def print_sorted_movies_by_ratings():
     print_line()
 
 
+
 def main():
     """Run the interactive movie database menu."""
     menu = ["Exit", "List movies", "Add movie", "Delete movie", "Update movie", "Stats", "Random movie", "Search movie",
-            "Movies sorted by rating"]
+            "Movies sorted by rating","Generate website"]
     menu_commands = {
         0 :'EXit',
         1 : list_movies_and_display_total,
@@ -233,7 +237,8 @@ def main():
         5:print_stats,
         6:print_random_movie,
         7:search_movie,
-        8:print_sorted_movies_by_ratings
+        8:print_sorted_movies_by_ratings,
+        9:generate_website
     }
 
     print("********** My Movies Database **********")
