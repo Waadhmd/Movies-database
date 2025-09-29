@@ -1,11 +1,9 @@
-import json
 import random
 import re
 
-import movie_storage_sql as storage
+from movie_storage import movie_storage_sql as storage
 from utils import err_msg, user_prompt, display_menu
-from datetime import datetime
-from omdb_api import fetch_movie
+from services.omdb_api import fetch_movie
 from generate_website import generate_website
 
 def print_line(spaces=1):

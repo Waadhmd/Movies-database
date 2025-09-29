@@ -1,8 +1,12 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+import os
 
 # Define the database URL
-DB_URL = "sqlite:///movies.db"
+DB_URL = "sqlite:///data/movies.db"
+
+# Ensure data/ directory exists
+os.makedirs("data", exist_ok=True)
 
 # Create the engine
 engine = create_engine(DB_URL, echo=True)

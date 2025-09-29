@@ -1,7 +1,13 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+# Database files (local/dev only)
+data/*.db
+data/*.sqbpro
 # Byte-compiled / optimized / DLL files
 .idea
 .env
-__pycache__/
 *.py[codz]
 *$py.class
 

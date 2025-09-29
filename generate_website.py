@@ -1,4 +1,4 @@
-import movie_storage_sql as storage
+from movie_storage import movie_storage_sql as storage
 
 TEMPLATE_FILE_BATH = '_static/index_template.html'
 OUTPUT_HTML_FILE = '_static/index.html'
