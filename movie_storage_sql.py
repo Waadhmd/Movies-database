@@ -49,6 +49,9 @@ def list_movies():
 
 def add_movie(title:str, year:int, rating:float,poster:str):
     """Add a new movie to the database."""
+    title = title.strip()            # remove leading/trailing spaces
+    title = title.casefold().title() # normalize casing
+    poster = None if poster == "N/A" else poster  # handle missing posters
     with engine.connect() as connection:
         try:
             connection.execute(text("INSERT INTO movies (title, year, rating, poster) VALUES (:title, :year, :rating,:poster)"),
@@ -69,7 +72,7 @@ def delete_movie(title:str):
     with engine.connect() as connection:
         try:
             result =connection.execute(
-                text("DELETE from movies WHERE title = :title"),{"title":title})
+                text("DELETE FROM movies WHERE lower(trim(title)) = lower(:title)"),{"title":title})
             connection.commit()
             if result.rowcount == 0:
                 print(f"Movie '{title}' not found.")

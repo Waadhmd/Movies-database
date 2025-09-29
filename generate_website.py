@@ -35,5 +35,4 @@ def generate_website():
     print("Website was generated successfully.")
 
 
-generate_website()
 

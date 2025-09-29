@@ -100,7 +100,6 @@ def update_movie():
     """Prompt the user to update the rating of a movie."""
     movie_name = get_valid_input('please enter the name of the movie you want to update:', validate_name,
                                  'Please enter a valid, non-empty movie name')
-    #movie_name = user_prompt("please enter the name of the movie you want to update:")
     movie_rating = get_valid_input('Enter a new movie rating:',validate_rating,"Rating must be a number between 1 and 10.")
     if storage.update_movie(movie_name,movie_rating):
         print('Movie updated successfully!')
