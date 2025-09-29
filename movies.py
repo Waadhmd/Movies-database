@@ -2,9 +2,46 @@ import random
 import re
 
 from movie_storage import movie_storage_sql as storage
+from movie_storage.movie_storage_sql import list_users
 from utils import err_msg, user_prompt, display_menu
 from services.omdb_api import fetch_movie
 from generate_website import generate_website
+active_user_id = None
+active_username = None
+
+def select_user():
+    """Prompt the user to select or create a user profile."""
+    global  active_user_id, active_username
+
+    users = storage.list_users()
+    print("Welcome to the Movie App! 🎬\n")
+    print('select a user:')
+    for i, (uid, uname ) in enumerate(users, start=1):
+        print(f"{i}. {uname}")
+    print(f"{len(users) +1}. Create new user")
+    while True:
+        try:
+            choice = int(input('Enter choice: '))
+            if choice == len(users) + 1:
+                username = input('Entr new username: ').strip()
+                if storage.add_user(username):
+                    active_username = username
+                    active_user_id = storage.get_user_id(username)
+                    print(f"\n✅ Welcome, {active_username}! Your profile has been created.\n")
+                else:
+                    print(f"\n❌ User '{username}' already exists. Try again.\n")
+                    continue
+            elif 1 <= choice <= len(users):
+                active_user_id, active_username = users[choice - 1]
+                print(f"\n👋 Welcome back, {active_username}!\n")
+            else:
+                print('Invalid choice. Try again')
+                continue
+            break
+        except ValueError:
+            print('Please enter a valid number.')
+
+
 
 def print_line(spaces=1):
     # Print blank lines for readability.
@@ -22,7 +59,7 @@ def prompt_user_to_choice():
 # print total of movies in database , list all movies along with their rating
 def list_movies_and_display_total():
     """List all movies with their year and rating, and print the total number of movies."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(active_user_id)
     total_movies = len(movies)
     print(f"{total_movies} movies in total")
     for movie, info in movies.items():
@@ -74,7 +111,7 @@ def add_movie():
     year = movie['year']
     poster = movie['poster']
     # save to database
-    if storage.add_movie(title, year, rating, poster):
+    if storage.add_movie(title, year, rating, poster,active_user_id):
         print('Movie added successfully!')
     else:
         err_msg('Movie already exist!')
@@ -146,7 +183,7 @@ def print_worst_rating_movies(movies):
 # print statistics about the movies in database
 def print_stats():
     """Print statistics about the movies: average, median, best and worst."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(active_user_id)
     # average ratings
     ratings = [details['rating'] for details in movies.values() ]
     total_rating = sum(ratings)
@@ -162,7 +199,7 @@ def print_stats():
 
 def print_random_movie():
     """Print a randomly selected movie from the database."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(active_user_id)
     #functions like random.choice() need an indexable sequence (like a list or tuple),dict_keys is not indexable.
     random_movie_name = random.choice(list(movies.keys()))
     print(f"Your movie for tonight {random_movie_name} , it'S rated {movies[random_movie_name]['rating']}")
@@ -188,7 +225,7 @@ def min_distance(word1, word2):
 
 def search_movie():
     """Search for a movie by partial name; suggest close matches if none found."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(active_user_id)
     user_search_query = user_prompt('Enter part of movie name: ')
 
     results = [(movie , details['rating']) for movie , details in movies.items() if user_search_query.lower() in movie.lower()]
@@ -213,7 +250,7 @@ def search_movie():
 
 def print_sorted_movies_by_ratings():
     """Print all movies sorted by rating in descending order."""
-    movies = storage.list_movies()
+    movies = storage.list_movies(active_user_id)
     sorted_by_ratings = sorted(movies.items(), key=lambda item: item[1]['rating'], reverse=True)
     for movie, details in sorted_by_ratings:
         print(f"{movie}, {details['rating']}")
@@ -223,8 +260,13 @@ def print_sorted_movies_by_ratings():
 
 def main():
     """Run the interactive movie database menu."""
+    global active_user_id, active_username
+
+    # Step 1: select or create user
+    select_user()
+
     menu = ["Exit", "List movies", "Add movie", "Delete movie", "Update movie", "Stats", "Random movie", "Search movie",
-            "Movies sorted by rating","Generate website"]
+            "Movies sorted by rating","Generate website","Switch user"]
     menu_commands = {
         0 :'EXit',
         1 : list_movies_and_display_total,
@@ -235,7 +277,8 @@ def main():
         6:print_random_movie,
         7:search_movie,
         8:print_sorted_movies_by_ratings,
-        9:generate_website
+        9:generate_website,
+        10:select_user
     }
 
     print("********** My Movies Database **********")

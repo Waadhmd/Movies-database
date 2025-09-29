@@ -15,23 +15,32 @@ def init_db():
     """Initialize the database and create the movies table if it does not exist."""
     # Create the movies table if it does not exist
     with engine.connect() as connection:
+        # Users table
+        connection.execute(text("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL
+            )
+        """))
         connection.execute(text("""
             CREATE TABLE IF NOT EXISTS movies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT UNIQUE NOT NULL,
                 year INTEGER NOT NULL,
                 rating REAL NOT NULL,
-                poster TEXT NOT NULL
+                poster TEXT NOT NULL,
+                user_id INTEGER NOT NULL,
+                FOREIGN KEY(user_id) REFERENCES users(id)
             )
         """))
         connection.commit()
 
 
-def list_movies():
+def list_movies(user_id):
     """Retrieve all movies from the database."""
     try:
         with engine.connect() as connection:
-            result = connection.execute(text("SELECT title, year, rating, poster FROM movies"))
+            result = connection.execute(text("SELECT title, year, rating, poster FROM movies WHERE user_id =:user_id"),{ "user_id": user_id})
             movies = result.fetchall()
             if not movies:
                 print('No movies found in database')
@@ -51,15 +60,15 @@ def list_movies():
 
 
 
-def add_movie(title:str, year:int, rating:float,poster:str):
+def add_movie(title:str, year:int, rating:float,poster:str, user_id:int):
     """Add a new movie to the database."""
     title = title.strip()            # remove leading/trailing spaces
     title = title.casefold().title() # normalize casing
     poster = None if poster == "N/A" else poster  # handle missing posters
     with engine.connect() as connection:
         try:
-            connection.execute(text("INSERT INTO movies (title, year, rating, poster) VALUES (:title, :year, :rating,:poster)"),
-                                   {"title": title, "year": year, "rating": rating,"poster":poster})
+            connection.execute(text("INSERT INTO movies (title, year, rating, poster,user_id) VALUES (:title, :year, :rating, :poster, :user_id)"),
+                                   {"title": title, "year": year, "rating": rating,"poster":poster,"user_id":user_id})
             connection.commit()
             print(f"Movie '{title}' added successfully.")
             return True
@@ -104,6 +113,37 @@ def update_movie(title:str, rating:float):
     except SQLAlchemyError as e :
         print(f"Error updating movie {e}")
         return False
+
+def add_user(username:str):
+    """Add new user."""
+    with engine.connect() as connection:
+        try:
+            connection.execute(
+                text("INSERT INTO users (username) VALUES (:username)"),
+                {"username": username}
+            )
+            connection.commit()
+            return True
+        except IntegrityError:
+            return False
+
+def list_users():
+    """RETURN a list of users"""
+    with engine.connect() as connection:
+        result = connection.execute(text("SELECT id, username FROM users"))
+        return result.fetchall()
+
+def get_user_id(username: str):
+    """Return the user ID for a given username."""
+    with engine.connect() as conn:
+        result = conn.execute(
+            text("SELECT id FROM users WHERE username = :username"),
+            {"username": username}
+        ).fetchone()
+    if result:
+        return result.id
+    else:
+        return None
 
 # Initialize the database when module is imported
 init_db()
