@@ -23,15 +23,18 @@ def serialize_movie(title: str, movie_info: dict):
         </article>
         """
 
-def generate_website():
+def generate_website(user_id, username):
     """Generate website index.html from template and movie storage."""
     html_template = load_html(TEMPLATE_FILE_BATH)
-    movies = storage.list_movies()
+    movies = storage.list_movies(user_id)
+    if not movies:
+        print(f"{username}, your movie collection is empty!")
+        return
     movie_grid = ''.join(serialize_movie(title, info) for title, info in movies.items())
     rendered_html = html_template.replace('__TEMPLATE_TITLE__','__Movie database__')
     rendered_html = rendered_html.replace(' __TEMPLATE_MOVIE_GRID__',movie_grid)
-
-    save_file(OUTPUT_HTML_FILE,rendered_html)
+    personalized_file_path = OUTPUT_HTML_FILE.replace('index',username)
+    save_file(personalized_file_path,rendered_html)
     print("Website was generated successfully.")
 
 

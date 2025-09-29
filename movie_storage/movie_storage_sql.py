@@ -9,7 +9,7 @@ DB_URL = "sqlite:///data/movies.db"
 os.makedirs("data", exist_ok=True)
 
 # Create the engine
-engine = create_engine(DB_URL, echo=True)
+engine = create_engine(DB_URL, echo=False)
 
 def init_db():
     """Initialize the database and create the movies table if it does not exist."""

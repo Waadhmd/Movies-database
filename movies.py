@@ -49,9 +49,9 @@ def print_line(spaces=1):
         print()
 
 
-def prompt_user_to_choice():
+def prompt_user_to_choice(menu):
     """Prompt the user to select a menu option and return it as an integer."""
-    choice = int(user_prompt("Enter choice (0-8):"))
+    choice = int(user_prompt(f"Enter choice (0-{len(menu)-1}):"))
     print_line()
     return choice
 
@@ -277,7 +277,7 @@ def main():
         6:print_random_movie,
         7:search_movie,
         8:print_sorted_movies_by_ratings,
-        9:generate_website,
+        9: lambda: generate_website(active_user_id, active_username),
         10:select_user
     }
 
@@ -287,12 +287,15 @@ def main():
     while True:
         display_menu(menu)
         try:
-            user_choice = prompt_user_to_choice()
+            user_choice = prompt_user_to_choice(menu)
             if user_choice == 0:
                 print('Bye!')
                 break
             elif user_choice in menu_commands:
-                menu_commands[user_choice]()
+                try:
+                    menu_commands[user_choice]()
+                except Exception as e:
+                    print(f"Error: {e}")
             else:
                 err_msg('Not on the Menu!')
         except ValueError:
