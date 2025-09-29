@@ -31,7 +31,7 @@ def generate_website(user_id, username):
         print(f"{username}, your movie collection is empty!")
         return
     movie_grid = ''.join(serialize_movie(title, info) for title, info in movies.items())
-    rendered_html = html_template.replace('__TEMPLATE_TITLE__','__Movie database__')
+    rendered_html = html_template.replace('__TEMPLATE_TITLE__',f"__ {username}'s Movie database __")
     rendered_html = rendered_html.replace(' __TEMPLATE_MOVIE_GRID__',movie_grid)
     personalized_file_path = OUTPUT_HTML_FILE.replace('index',username)
     save_file(personalized_file_path,rendered_html)
