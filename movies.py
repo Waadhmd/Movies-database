@@ -2,16 +2,18 @@ import random
 import re
 
 from movie_storage import movie_storage_sql as storage
-from movie_storage.movie_storage_sql import list_users
 from utils import err_msg, user_prompt, display_menu
 from services.omdb_api import fetch_movie
 from generate_website import generate_website
 active_user_id = None
 active_username = None
 
+RATING_MIN = 1
+RATING_MAX = 10
+
 def select_user():
     """Prompt the user to select or create a user profile."""
-    global  active_user_id, active_username
+    global active_user_id, active_username
 
     users = storage.list_users()
     print("Welcome to the Movie App! 🎬\n")
@@ -74,7 +76,7 @@ def get_valid_input(prompt,validator,error_msg):
             result = validator(user_input)
             if result is None:
                 print(error_msg)
-            elif result is not None:
+            else:
                 return result
         except ValueError:
             pass
@@ -84,7 +86,7 @@ def validate_rating(rating):
     """Validate that a rating is a number between 1 and 10"""
     if rating.replace('.','',1).isdigit():
         r = float(rating)
-        if  1<= r <= 10:
+        if RATING_MIN <= r <= RATING_MAX:
             return r
     return None
 
@@ -122,7 +124,7 @@ def delete_movie():
     """Prompt the user to delete a movie by name."""
     movie_name = get_valid_input('please enter the name of the movie you want to delete:', validate_name,
                                  'Please enter a valid, non-empty movie name')
-    if storage.delete_movie(movie_name):
+    if storage.delete_movie(movie_name, active_user_id):
         print(f"Movie {movie_name} successfully deleted")
     else:
         err_msg("Movie doesn't exist!")
@@ -136,7 +138,7 @@ def update_movie():
     movie_name = get_valid_input('please enter the name of the movie you want to update:', validate_name,
                                  'Please enter a valid, non-empty movie name')
     movie_rating = get_valid_input('Enter a new movie rating:',validate_rating,"Rating must be a number between 1 and 10.")
-    if storage.update_movie(movie_name,movie_rating):
+    if storage.update_movie(movie_name,movie_rating, active_user_id):
         print('Movie updated successfully!')
     else:
         err_msg("Movie doesn't exist!")
@@ -268,7 +270,7 @@ def main():
     menu = ["Exit", "List movies", "Add movie", "Delete movie", "Update movie", "Stats", "Random movie", "Search movie",
             "Movies sorted by rating","Generate website","Switch user"]
     menu_commands = {
-        0 :'EXit',
+        0 :'Exit',
         1 : list_movies_and_display_total,
         2 : add_movie,
         3:delete_movie,

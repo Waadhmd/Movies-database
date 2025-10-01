@@ -25,12 +25,13 @@ def init_db():
         connection.execute(text("""
             CREATE TABLE IF NOT EXISTS movies (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT UNIQUE NOT NULL,
+                title TEXT NOT NULL,
                 year INTEGER NOT NULL,
                 rating REAL NOT NULL,
                 poster TEXT NOT NULL,
                 user_id INTEGER NOT NULL,
                 FOREIGN KEY(user_id) REFERENCES users(id)
+                UNIQUE(title, user_id)
             )
         """))
         connection.commit()
@@ -80,12 +81,12 @@ def add_movie(title:str, year:int, rating:float,poster:str, user_id:int):
             return False
 
 
-def delete_movie(title:str):
+def delete_movie(title:str,user_id:int):
     """Delete a movie from the database."""
     with engine.connect() as connection:
         try:
             result =connection.execute(
-                text("DELETE FROM movies WHERE lower(trim(title)) = lower(:title)"),{"title":title})
+                text("DELETE FROM movies WHERE lower(trim(title)) = lower(:title) AND user_id = :user_id"),{"title":title,'user_id':user_id})
             connection.commit()
             if result.rowcount == 0:
                 print(f"Movie '{title}' not found.")
@@ -97,15 +98,15 @@ def delete_movie(title:str):
             return False
 
 
-def update_movie(title:str, rating:float):
+def update_movie(title:str, rating:float, user_id:int):
     """Update a movie's rating in the database."""
     try:
         with engine.connect() as connection:
-            result = connection.execute(text("UPDATE movies SET rating = :rating WHERE title = :title "),
-                                        {'rating': rating, 'title': title})
+            result = connection.execute(text("UPDATE movies SET rating = :rating WHERE title = :title AND user_id = :user_id"),
+                                        {'rating': rating, 'title': title, 'user_id':user_id})
             connection.commit()
             if result.rowcount == 0:
-                print(f"Movie 'title' not found")
+                print(f"Movie '{title}' not found")
                 return False
             print(f"Movie '{title}' updated successfully.")
             return True
